@@ -1,13 +1,13 @@
 const express = require('express')
 const nodemailer = require('nodemailer');
+require('dotenv').config()
 
-const myEmail = 'valtteri.e.laine@gmail.com';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'valtteri.jobs@gmail.com',
-    pass: ''
+    user: process.env.EMAIL_SENDER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -29,8 +29,8 @@ app.post('/comment', function (req, res) {
   }
 
   const mailOptions = {
-    from: 'valtteri.jobs@gmail.com',
-    to: 'valtteri.e.laine@gmail.com',
+    from: process.env.EMAIL_SENDER,
+    to: process.env.EMAIL_RECEIVER,
     subject: name + ' contacted you via portfolio site',
     text: message
   };
@@ -38,7 +38,7 @@ app.post('/comment', function (req, res) {
   transporter.sendMail(mailOptions, function(error, info){
     if (error) {
       res.status(500);
-      res.send('Error sending email! Please send email manually to valtteri.jobs@gmail.com');
+      res.send('Error sending email! Please send email manually to ' + process.env.EMAIL_SENDER);
     } else {
       res.status(200);
       res.send('Email sent succesfully');
