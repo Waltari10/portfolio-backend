@@ -5,6 +5,6 @@ COPY . .
 
 RUN npm ci
 
-EXPOSE 3001
+EXPOSE $PORT
 
 CMD [ "npm", "run", "start" ]

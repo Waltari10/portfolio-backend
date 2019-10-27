@@ -1,0 +1,10 @@
+/node_modules
+/public
+/documentation
+/build
+/src/assets
+/dist
+/docs
+/mockServer
+/~
+/coverage
