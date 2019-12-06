@@ -1,87 +1,60 @@
-const express = require('express')
-const nodemailer = require('nodemailer');
-require('dotenv').config()
+const express = require('express');
+require('dotenv').config();
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_SENDER,
-    pass: process.env.EMAIL_PASS
-  }
-});
-
-
-const app = express()
+const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(express.json())
+app.use(express.json());
 
-
-const sendEmail = (from, to, subject, text) => {
-  const mailOptions = {
-    from,
-    to,
-    subject,
-    text
-  };
-
-  return new Promise((resolve, reject) => {
-    
-    transporter.sendMail(mailOptions, function(error, info){
-      if (error) {
-        reject(error)
-      } else {
-        resolve(info)
-      }
-    });
-  })
-
-}
-
-app.post('/comment', function (req, res) {
-
-  const { name = '', email = '', message = ''} = req.body || {};
+app.post('/comment', function(req, res) {
+  const {name = '', email = '', message = ''} = req.body || {};
 
   if (typeof message !== 'string' || typeof name !== 'string' ) {
-
-      res.status(400);
-      res.send('Please check that email, message and name are correctly entered.');
-      return;
+    res.status(400);
+    res.send(`Please check that email, 
+    message and name are correctly entered.`);
+    return;
   }
 
   let sendConfirmationEmailPromise;
 
   if (typeof email === 'string' && !!email) {
-    sendConfirmationEmailPromise = sendEmail(
-      process.env.EMAIL_SENDER,
-      email,
-      'Your contact email has been sent to Valtteri',
-      'Your contact email has been sent to Valtteri Laine. He will get back to you shortly.'
-    );
+    sendConfirmationEmailPromise = sgMail.send({
+      from: process.env.EMAIL_SENDER,
+      to: email,
+      subject: 'Your contact email has been sent to Valtteri',
+      text: `Your contact email has been sent to 
+      Valtteri Laine. He will get back to you shortly.`,
+    });
   }
 
-  const sendContactEmailPromise = sendEmail(
-    process.env.EMAIL_SENDER, 
-    process.env.EMAIL_RECEIVER, 
-    name + ' contacted you via portfolio site', 
-    message
-  );
+  const sendContactEmailPromise = sgMail.send({
+    from: process.env.EMAIL_SENDER,
+    to: process.env.EMAIL_RECEIVER,
+    subject: name + ' contacted you via portfolio site',
+    text: message,
+  });
 
 
   Promise.all([sendConfirmationEmailPromise, sendContactEmailPromise])
-  .then(() => {
-      res.status(200);
-      res.send('Email sent succesfully');
-      console.log('Email sent: ' + info.response);
-  })
-  .catch((err) => {
-      res.status(500);
-      res.send('Error sending email! Please send email manually to ' + process.env.EMAIL_SENDER);
-  })
-})
- 
-app.listen(port)
+      .then(() => {
+        res.status(200);
+        res.send('Email sent succesfully');
+        console.log('Email sent: ' + info.response);
+      })
+      .catch((err) => {
+        res.status(500);
+        res.send(
+            'Error sending email! Please send email manually to ' +
+            process.env.EMAIL_SENDER,
+        );
+      });
+});
+
+app.listen(port);
 
 
-console.log('Listening on port: ' + port)
+console.log('Listening on port: ' + port);
