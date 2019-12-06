@@ -43,9 +43,9 @@ app.post('/comment', function(req, res) {
       .then(() => {
         res.status(200);
         res.send('Email sent succesfully');
-        console.log('Email sent: ' + info.response);
+        console.log('Email sent succesfully');
       })
-      .catch((err) => {
+      .catch(() => {
         res.status(500);
         res.send(
             'Error sending email! Please send email manually to ' +
